@@ -1,12 +1,102 @@
 version: 2
+
 updates:
-  - package-ecosystem: github-actions
-    directory: /
-    schedule:
-      interval: monthly
-    open-pull-requests-limit: 5
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: monthly
-    open-pull-requests-limit: 5
+      time: "06:00"
+      timezone: UTC
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
+      semver-minor-days: 7
+      semver-patch-days: 3
+    open-pull-requests-limit: 4
+    rebase-strategy: auto
+    labels:
+      - dependencies
+      - javascript
+    commit-message:
+      prefix: "build(deps)"
+      prefix-development: "build(deps-dev)"
+      include: scope
+    groups:
+      routine-version-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+      framework-major-updates:
+        applies-to: version-updates
+        patterns:
+          - next
+          - react
+          - react-dom
+          - eslint-config-next
+          - "@types/react*"
+        update-types:
+          - major
+      styling-major-updates:
+        applies-to: version-updates
+        patterns:
+          - tailwindcss
+          - postcss
+          - autoprefixer
+        update-types:
+          - major
+      other-major-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - major
+      routine-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+      major-security-updates:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - major
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      time: "06:30"
+      timezone: UTC
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
+      semver-minor-days: 7
+      semver-patch-days: 3
+    open-pull-requests-limit: 2
+    rebase-strategy: auto
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: "build(deps)"
+      include: scope
+    groups:
+      routine-action-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+      major-action-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - major

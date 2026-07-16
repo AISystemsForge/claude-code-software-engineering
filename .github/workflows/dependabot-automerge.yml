@@ -1,0 +1,87 @@
+name: Dependabot auto-merge
+
+on:
+  workflow_run:
+    workflows:
+      - Continuous integration
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependabot-automerge-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    name: Merge verified routine update
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]' &&
+      github.event.workflow_run.pull_requests[0].base.ref == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+      TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Verify update risk and merge
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          repository="${GITHUB_REPOSITORY}"
+          pull="$(gh api "repos/${repository}/pulls/${PR_NUMBER}")"
+
+          jq -e \
+            --arg sha "${TESTED_SHA}" \
+            '.state == "open"
+              and .user.login == "dependabot[bot]"
+              and .base.ref == "main"
+              and .head.sha == $sha
+              and .draft == false' \
+            <<<"${pull}" >/dev/null
+
+          mapfile -t update_types < <(
+            gh api --paginate "repos/${repository}/pulls/${PR_NUMBER}/commits" \
+              --jq '.[].commit.message' |
+              sed -n 's/^[[:space:]]*update-type: version-update:semver-//p'
+          )
+
+          if [[ "${#update_types[@]}" -eq 0 ]]; then
+            echo "No Dependabot update metadata was found; human review is required."
+            exit 0
+          fi
+
+          for update_type in "${update_types[@]}"; do
+            if [[ "${update_type}" != "patch" && "${update_type}" != "minor" ]]; then
+              echo "${update_type} updates require human review."
+              exit 0
+            fi
+          done
+
+          mapfile -t changed_files < <(
+            gh api --paginate "repos/${repository}/pulls/${PR_NUMBER}/files" \
+              --jq '.[].filename'
+          )
+
+          for path in "${changed_files[@]}"; do
+            case "${path}" in
+              package.json|package-lock.json|.github/workflows/*.yml|.github/workflows/*.yaml)
+                ;;
+              *)
+                echo "Unexpected changed file ${path}; human review is required."
+                exit 0
+                ;;
+            esac
+          done
+
+          gh pr merge "${PR_NUMBER}" \
+            --repo "${repository}" \
+            --squash \
+            --delete-branch
