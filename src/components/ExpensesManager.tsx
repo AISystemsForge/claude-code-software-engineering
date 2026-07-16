@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { useExpenses } from "@/context/ExpenseContext";
 import { useToast } from "@/components/Toast";
 import { byDateDesc, sumAmount } from "@/lib/analytics";
-import { downloadExpensesCsv } from "@/lib/csv";
 import { formatCurrency } from "@/lib/format";
 import type { Expense, ExpenseDraft } from "@/lib/types";
 import { ExpenseList } from "./ExpenseList";
@@ -13,6 +12,7 @@ import { Modal } from "./Modal";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { EmptyState } from "./EmptyState";
 import { LoadingState } from "./LoadingState";
+import { ExportDrawer } from "./export/ExportDrawer";
 import {
   DEFAULT_FILTERS,
   ExpenseFilters,
@@ -35,6 +35,7 @@ export function ExpensesManager() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
   const [deleting, setDeleting] = useState<Expense | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const filtered = useMemo(
     () => applyFilters(expenses, filters),
@@ -72,23 +73,14 @@ export function ExpensesManager() {
     setDeleting(null);
   };
 
-  const handleExport = () => {
-    if (filtered.length === 0) {
-      toast("Nothing to export", "error");
-      return;
-    }
-    downloadExpensesCsv(filtered);
-    toast(`Exported ${filtered.length} expenses to CSV`);
-  };
-
   if (loading) return <LoadingState />;
 
   return (
     <div className="space-y-6">
       <PageHeader
         onAdd={openAdd}
-        onExport={handleExport}
-        canExport={filtered.length > 0}
+        onExport={() => setExportOpen(true)}
+        canExport={expenses.length > 0}
       />
 
       {expenses.length === 0 ? (
@@ -184,6 +176,15 @@ export function ExpensesManager() {
         onConfirm={handleConfirmDelete}
         onCancel={() => setDeleting(null)}
       />
+
+      <ExportDrawer
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        expenses={expenses}
+        onExported={(count, format) =>
+          toast(`Exported ${count} expenses as ${format.toUpperCase()}`)
+        }
+      />
     </div>
   );
 }
@@ -226,7 +227,7 @@ function PageHeader({
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <path d="M7 10l5 5 5-5M12 15V3" />
           </svg>
-          Export CSV
+          Export…
         </button>
         <button type="button" className="btn-primary" onClick={onAdd}>
           <svg
