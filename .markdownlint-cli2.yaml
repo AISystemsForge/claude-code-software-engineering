@@ -5,3 +5,5 @@ globs:
   - "**/*.md"
 ignores:
   - ".git/**"
+  - ".next/**"
+  - "node_modules/**"

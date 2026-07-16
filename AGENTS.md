@@ -15,10 +15,11 @@ Human contributors remain responsible for reviewing and accepting changes.
 - Inspect the actual repository state; do not infer absent architecture.
 - Preserve user changes and keep work inside the requested scope.
 - Make the smallest complete change that satisfies the requirement.
-- Do not introduce application code, examples, dependencies, or directories
-  without a concrete responsibility.
-- Do not select a language, framework, cloud, model provider, or deployment
-  strategy on behalf of future repositories.
+- Preserve the client-only architecture unless an approved decision establishes
+  a new system boundary.
+- Use npm and keep `package-lock.json` synchronized with dependency changes.
+- Do not commit `.next/`, `node_modules/`, local Claude settings, environment
+  files, or generated TypeScript state.
 - Record consequential, long-lived structural decisions as ADRs.
 - Update documentation when behavior or an engineering contract changes.
 - Run proportionate verification and report anything not verified.
@@ -26,9 +27,11 @@ Human contributors remain responsible for reviewing and accepting changes.
 
 ## Repository-specific constraint
 
-This repository is an upstream template. Evaluate every proposed default for its
-effect on unrelated future projects. A convention that belongs to one derived
-repository should remain there.
+This repository contains a Next.js course project. Expense data is currently
+stored only in browser `localStorage`; do not add a backend, external data flow,
+or authentication boundary without documenting and approving the architecture
+change. Preserve validation at the storage boundary and avoid handling real
+financial data in tests, prompts, or documentation.
 
 More specific `AGENTS.md` files may refine these instructions in derived
 repositories. They must not silently weaken security or review requirements.
