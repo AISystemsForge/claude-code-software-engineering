@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const NAV = [
   { href: "/", label: "Dashboard", icon: DashboardIcon },
   { href: "/expenses", label: "Expenses", icon: ListIcon },
+  { href: "/export", label: "Cloud Export", icon: CloudIcon },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -55,7 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </main>
 
         {/* Bottom nav (mobile) */}
-        <nav className="sticky bottom-0 z-20 grid grid-cols-2 gap-1 border-t border-slate-200 bg-white/95 p-2 backdrop-blur lg:hidden">
+        <nav className="sticky bottom-0 z-20 grid grid-cols-3 gap-1 border-t border-slate-200 bg-white/95 p-2 backdrop-blur lg:hidden">
           {NAV.map((item) => (
             <MobileNavLink
               key={item.href}
@@ -180,6 +181,23 @@ function ListIcon({ className = "" }: { className?: string }) {
       <line x1="3" y1="6" x2="3.01" y2="6" />
       <line x1="3" y1="12" x2="3.01" y2="12" />
       <line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  );
+}
+
+function CloudIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      className={`h-5 w-5 ${className}`}
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6-1.5A4.5 4.5 0 0 0 6.5 19h11Z" />
+      <path d="M12 12v6M9.5 15.5 12 18l2.5-2.5" />
     </svg>
   );
 }

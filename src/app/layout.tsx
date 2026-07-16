@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ExpenseProvider } from "@/context/ExpenseContext";
+import { CloudExportProvider } from "@/context/CloudExportContext";
 import { ToastProvider } from "@/components/Toast";
 import { AppShell } from "@/components/AppShell";
 
@@ -23,7 +24,9 @@ export default function RootLayout({
       <body className="font-sans">
         <ToastProvider>
           <ExpenseProvider>
-            <AppShell>{children}</AppShell>
+            <CloudExportProvider>
+              <AppShell>{children}</AppShell>
+            </CloudExportProvider>
           </ExpenseProvider>
         </ToastProvider>
       </body>
