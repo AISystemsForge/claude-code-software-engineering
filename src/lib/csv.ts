@@ -12,12 +12,12 @@ function escapeCell(value: string | number): string {
 
 /** Build a CSV string from a list of expenses. */
 export function expensesToCsv(expenses: Expense[]): string {
-  const header = ["Date", "Category", "Description", "Amount"];
+  const header = ["Date", "Category", "Amount", "Description"];
   const rows = expenses.map((e) => [
     formatDate(e.date),
     e.category,
-    e.description,
     e.amount.toFixed(2),
+    e.description,
   ]);
   return [header, ...rows]
     .map((row) => row.map(escapeCell).join(","))

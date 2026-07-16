@@ -10,6 +10,7 @@ import {
   monthlyTrend,
   sumAmount,
 } from "@/lib/analytics";
+import { downloadExpensesCsv } from "@/lib/csv";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { SummaryCards } from "./SummaryCards";
 import { DonutChart } from "./charts/DonutChart";
@@ -30,17 +31,33 @@ export function Dashboard() {
     [expenses],
   );
 
+  const handleExport = () => {
+    if (expenses.length === 0) {
+      toast("Nothing to export", "error");
+      return;
+    }
+    downloadExpensesCsv(expenses);
+    toast(`Exported ${expenses.length} expenses to CSV`);
+  };
+
   if (loading) return <LoadingState />;
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          An overview of your spending at a glance.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Dashboard
+          </h1>
+          <p className="mt-1 text-sm text-slate-500">
+            An overview of your spending at a glance.
+          </p>
+        </div>
+        {expenses.length > 0 && (
+          <button type="button" className="btn-secondary" onClick={handleExport}>
+            Export Data
+          </button>
+        )}
       </div>
 
       {expenses.length === 0 ? (
